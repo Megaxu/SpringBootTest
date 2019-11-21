@@ -1,8 +1,7 @@
-package com.example.com.example.SpringBootTest;
+package com.example.com.example.SpringBootTest.controler;
 
 import com.example.com.example.SpringBootTest.domain.Message;
 import com.example.com.example.SpringBootTest.repos.MessageRepo;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,19 +10,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class GreetingController {
+public class MainController {
   @Autowired
   private MessageRepo messageRepo;
 
-  @GetMapping("/greeting")
+  @GetMapping("/")
   public String greeting(
-      @RequestParam(name = "name", required = false, defaultValue = "World") String name,
       Map<String, Object> model) {
-    model.put("name", name);
     return "greeting";
   }
 
-  @GetMapping
+  @GetMapping("/main")
   public String main(Map<String, Object> model) {
     Iterable<Message> messages = messageRepo.findAll();
 
@@ -31,7 +28,7 @@ public class GreetingController {
     return "main";
   }
 
-  @PostMapping
+  @PostMapping("/main")
   public String add(@RequestParam String text, @RequestParam String tag, Map<String, Object> model) {
     Message message = new Message(text, tag);
 
