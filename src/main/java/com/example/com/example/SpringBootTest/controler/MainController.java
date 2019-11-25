@@ -3,7 +3,11 @@ package com.example.com.example.SpringBootTest.controler;
 import com.example.com.example.SpringBootTest.domain.Message;
 import com.example.com.example.SpringBootTest.domain.User;
 import com.example.com.example.SpringBootTest.repos.MessageRepo;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,11 +16,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class MainController {
   @Autowired
   private MessageRepo messageRepo;
+
+  @Value("${upload.path}")
+  private String uploadPath;
 
   @GetMapping("/")
   public String greeting(Map<String, Object> model) {
@@ -43,10 +51,24 @@ public class MainController {
   public String add(
       @AuthenticationPrincipal User user,
       @RequestParam String text,
-      @RequestParam String tag, Map<String, Object> model
-  ) {
+      @RequestParam String tag, Map<String, Object> model,
+      @RequestParam("file") MultipartFile file
+  ) throws IOException {
     Message message = new Message(text, tag, user);
 
+    if (file != null && !file.getOriginalFilename().isEmpty()) {
+      File uploadDir = new File(uploadPath);
+
+      if(!uploadDir.exists()) {
+        uploadDir.mkdir();
+      }
+      String uuidFile = UUID.randomUUID().toString();
+      String resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+      file.transferTo(new File(uploadPath + "/" + resultFilename));
+
+      message.setFilename(resultFilename);
+    }
     messageRepo.save(message);
 
     Iterable<Message> messages = messageRepo.findAll();
